@@ -23,6 +23,8 @@ dataset = pd.read_csv('train.csv', sep=';')
 
 print(dataset.info())
 
+#Prepricessing categorical values
+
 countSex = dataset['SEX'].value_counts()
 dataset['SEX'] = dataset['SEX'].fillna('F', axis = 0)
 
@@ -34,20 +36,52 @@ dataset['MARRIAGE'] = dataset['MARRIAGE'].fillna('single', axis = 0)
 
 print(dataset.info())
 
-"""
-#print(dataset.describe())
-x = dataset.drop('BIRTH_DATE', axis = 1)
-x = x.values
+# Birthdate to date preprocessing
+from datetime import date, datetime
+
+def calculate_age(born):
+	if isinstance(born, float):
+		return born
+	born = datetime.strptime(born, "%d/%m/%Y")
+	today = date.today()
+	return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+dataset["BIRTH_DATE"] = dataset["BIRTH_DATE"].map(lambda x: calculate_age(x))
+
+imputer = Imputer(missing_values = np.nan, strategy="median", axis = 1)
+
+xx = imputer.fit_transform(dataset.iloc[:, 5])
+dataset.iloc[:, 5] = xx.flatten()
+
+print(dataset.info())
+
+# Encoding categorical variables
 
 labelEncoder = LabelEncoder()
-x[:, 2] = labelEncoder.fit_transform(x[:, 2])
-#imputer = Imputer(strategy="most_frequent", axis = 0)
+dataset.iloc[:, 2] = labelEncoder.fit_transform(dataset.iloc[:, 2]).flatten()
+dataset.iloc[:, 3] = labelEncoder.fit_transform(dataset.iloc[:, 3]).flatten()
+dataset.iloc[:, 4] = labelEncoder.fit_transform(dataset.iloc[:, 4]).flatten()
 
-#imputer.fit_transform(x)
+oneHotEncoder = OneHotEncoder(categorical_features=[2, 3, 4])
+X = oneHotEncoder.fit_transform(dataset.values).toarray()
+X = np.delete(X, [0, 2, 5], 1)
 
-"""
+# Remove Customer ID
+X = np.delete(X, 6, 1)
+
+# Features
+x = X[:, :-1]
+y = X[:, -1]
+
+#Splitting the dataset into training and test set
+from sklearn.cross_validation import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split( x, y, test_size=0.25, random_state=0, stratify=y)
+
 #Feature scaling
-"""from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler
 sc_X = StandardScaler()
 X_train = sc_X.fit_transform(X_train)
-X_test = sc_X.transform(X_test) """
+X_test = sc_X.transform(X_test)
+
+print(X_train)
+print(X_test)
