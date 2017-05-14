@@ -98,6 +98,13 @@ cm = confusion_matrix(y_test, y_pred)
 
 print(cm)
 
+# Applying k-Fold Cross Validation
+from sklearn.cross_validation import cross_val_score
+accuracies = cross_val_score(estimator=classifier, X=X_train, y=y_train, cv=10)
+
+print(accuracies.mean())
+print(accuracies.std())
+
 # Visualising the Training set results
 from matplotlib.colors import ListedColormap
 X_set, y_set = X_train, y_train
