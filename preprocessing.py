@@ -86,6 +86,17 @@ X_test = sc_X.transform(X_test)
 #print(X_train)
 #print(X_test)
 
+print(X_train.shape)
+
+# #Building the optimal model using Backward Elimination
+# #step 1
+# import statsmodels.formula.api as sm
+# x_opt = np.append(arr=np.ones((x.shape[0], 1)).astype(int), values=x, axis=1) #adding array of ones as first column
+# print(x.shape)
+# x_opt = np.delete(x_opt, [12, 14, 17, 18, 19, 20, 23, 26], 1)
+# regressor_OLS = sm.OLS(endog=y, exog=x_opt).fit()
+# print(regressor_OLS.summary())
+
 # Fitting classifier to the Training set
 from sklearn.svm import SVC
 classifier = SVC(kernel = 'rbf', random_state=0)
