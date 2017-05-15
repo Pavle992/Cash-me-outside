@@ -110,7 +110,7 @@ classifier.fit(X_train, y_train)
 # classifier.fit(X_train, y_train)
 
 # from sklearn.neighbors import KNeighborsClassifier
-# classifier = KNeighborsClassifier(n_neighbors=15, metric='minkowski', p=2)
+# classifier = KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2)
 # classifier.fit(X_train, y_train)
 
 
@@ -118,9 +118,11 @@ classifier.fit(X_train, y_train)
 y_pred = classifier.predict(X_test)
 
 # Making the Confusion Matrix
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, f1_score
 cm = confusion_matrix(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
 print(cm)
+print(f1)
 
 # # Visualising the Training set results
 # from matplotlib.colors import ListedColormap
