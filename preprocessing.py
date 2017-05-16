@@ -83,36 +83,30 @@ sc_X = StandardScaler()
 X_train = sc_X.fit_transform(X_train)
 X_test = sc_X.transform(X_test)
 
-# Applying PCA
-from sklearn.decomposition import PCA
-pca = PCA(n_components=2)
-X_train = pca.fit_transform(X_train, y_train)
-X_test = pca.fit_transform(X_test, y_test)
+# Applying Kernel LDA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+lda = LinearDiscriminantAnalysis(n_components = 2)
+X_train = lda.fit_transform(X_train, y_train)
+X_test = lda.transform(X_test)
 
-explained_variance = pca.explained_variance_ratio_
-print(explained_variance)
 
 # Fitting classifier to the Training set
 from sklearn.svm import SVC
-classifier = SVC(kernel = 'rbf', random_state=0)
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+
+models = {
+	'LogisticRegression' : LogisticRegression(random_state = 0),
+	'RandomForest' : RandomForestClassifier(n_estimators=100, criterion='entropy', random_state=0),
+	'NaiveBayes' : GaussianNB(),
+	'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
+	'KernelSVM' : SVC(kernel = 'rbf', random_state=0)
+}
+
+classifier = models['KernelSVM']
 classifier.fit(X_train, y_train)
-
-# from sklearn.linear_model import LogisticRegression
-# classifier = LogisticRegression(random_state = 0)
-# classifier.fit(X_train, y_train)
-
-# from sklearn.ensemble import RandomForestClassifier
-# classifier = RandomForestClassifier(n_estimators=10, criterion='entropy', random_state=0)
-# classifier.fit(X_train, y_train)
-
-# from sklearn.naive_bayes import GaussianNB
-# classifier = GaussianNB()
-# classifier.fit(X_train, y_train)
-
-# from sklearn.neighbors import KNeighborsClassifier
-# classifier = KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2)
-# classifier.fit(X_train, y_train)
-
 
 # Predicting the Test set results
 y_pred = classifier.predict(X_test)
@@ -120,7 +114,7 @@ y_pred = classifier.predict(X_test)
 # Making the Confusion Matrix
 from sklearn.metrics import confusion_matrix, f1_score
 cm = confusion_matrix(y_test, y_pred)
-f1 = f1_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred, average='micro')
 print(cm)
 print(f1)
 
