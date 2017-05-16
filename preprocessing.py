@@ -103,37 +103,38 @@ models = {
 	'RandomForest' : RandomForestClassifier(n_estimators=100, criterion='entropy', random_state=0),
 	'NaiveBayes' : GaussianNB(),
 	'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
-	'KernelSVM' : SVC(kernel = 'rbf', random_state=0, gamma=0.14),
+	'KernelSVC' : SVC(kernel = 'rbf', random_state=0),
 	'DecisionTree' : DecisionTreeClassifier(criterion='gini', random_state=0),
-	'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=0, base_estimator=DecisionTreeClassifier(criterion='gini', random_state=0))
+	'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=0, base_estimator=DecisionTreeClassifier(criterion='entropy', random_state=0))
 }
 
-classifier = models['KernelSVM']
-#classifier.fit(X_train, y_train)
+classifier = models['KernelSVC']
+# classifier.fit(X_train, y_train)
 
 # Predicting the Test set results
 #y_pred = classifier.predict(X_test)
 
-# Making the Confusion Matrix
-#from sklearn.metrics import confusion_matrix, f1_score
-#cm = confusion_matrix(y_test, y_pred)
-#f1 = f1_score(y_test, y_pred, average='micro')
-#print(cm)
-#print(f1)
+# #Making the Confusion Matrix
+# from sklearn.metrics import confusion_matrix, f1_score
+# cm = confusion_matrix(y_test, y_pred)
+# f1 = f1_score(y_test, y_pred, average='micro')
+# print(cm)
+# print(f1)
 
 # Applying k-Fold Cross Validation
-from sklearn.model_selection import cross_val_score
-accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = 10)
-print(accuracies.mean())
-print(accuracies.std())
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+folds = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
+# accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = folds, scoring='f1_micro')
+# print(accuracies.mean())
+# print(accuracies.std())
 
 # Applying Grid Search to find the best model and the best parameters
 from sklearn.model_selection import GridSearchCV
 parameters = [
-	             {'C' : [1, 10, 50], 'kernel' : ['rbf'], 'gamma' : [np.linspace(0, 0.5, 10)]} #after performing chose another params around optimal value [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
+	             {'C' : [1, 10], 'kernel' : ['rbf'], 'gamma' : np.linspace(0, 0.5, 3).tolist()} #after performing chose another params around optimal value [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
               ]
 
-grid_search = GridSearchCV(estimator=classifier, param_grid=parameters, scoring='f1_score', cv=10, n_jobs=-1) # n_jobs = -1 if you use this on large dataset
+grid_search = GridSearchCV(estimator=classifier, param_grid=parameters, scoring='f1_micro', cv=folds) # n_jobs = -1 if you use this on large dataset
 grid_search.fit(X_train, y_train)
 best_accuracy = grid_search.best_score_
 best_parameters = grid_search.best_params_
