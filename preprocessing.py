@@ -83,11 +83,11 @@ sc_X = StandardScaler()
 X_train = sc_X.fit_transform(X_train)
 X_test = sc_X.transform(X_test)
 
-# Applying Kernel LDA
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-lda = LinearDiscriminantAnalysis(n_components = 2)
-X_train = lda.fit_transform(X_train, y_train)
-X_test = lda.transform(X_test)
+# Applying Kernel PCA
+from sklearn.decomposition import KernelPCA
+kpca = KernelPCA(n_components = 2, kernel = 'rbf')
+X_train = kpca.fit_transform(X_train)
+X_test = kpca.transform(X_test)
 
 
 # Fitting classifier to the Training set
