@@ -83,12 +83,11 @@ sc_X = StandardScaler()
 X_train = sc_X.fit_transform(X_train)
 X_test = sc_X.transform(X_test)
 
-# Applying Kernel PCA
-from sklearn.decomposition import KernelPCA
-kpca = KernelPCA(n_components = 2, kernel = 'rbf')
-X_train = kpca.fit_transform(X_train)
-X_test = kpca.transform(X_test)
-
+# # Applying Kernel PCA
+# from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+# lda = LinearDiscriminantAnalysis(n_components = 2)
+# X_train = lda.fit_transform(X_train, y_train)
+# X_test = lda.transform(X_test)
 
 # Fitting classifier to the Training set
 from sklearn.svm import SVC
@@ -96,27 +95,50 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import AdaBoostClassifier
 
 models = {
 	'LogisticRegression' : LogisticRegression(random_state = 0),
 	'RandomForest' : RandomForestClassifier(n_estimators=100, criterion='entropy', random_state=0),
 	'NaiveBayes' : GaussianNB(),
 	'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
-	'KernelSVM' : SVC(kernel = 'rbf', random_state=0)
+	'KernelSVM' : SVC(kernel = 'rbf', random_state=0, gamma=0.14),
+	'DecisionTree' : DecisionTreeClassifier(criterion='gini', random_state=0),
+	'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=0, base_estimator=DecisionTreeClassifier(criterion='gini', random_state=0))
 }
 
 classifier = models['KernelSVM']
-classifier.fit(X_train, y_train)
+#classifier.fit(X_train, y_train)
 
 # Predicting the Test set results
-y_pred = classifier.predict(X_test)
+#y_pred = classifier.predict(X_test)
 
 # Making the Confusion Matrix
-from sklearn.metrics import confusion_matrix, f1_score
-cm = confusion_matrix(y_test, y_pred)
-f1 = f1_score(y_test, y_pred, average='micro')
-print(cm)
-print(f1)
+#from sklearn.metrics import confusion_matrix, f1_score
+#cm = confusion_matrix(y_test, y_pred)
+#f1 = f1_score(y_test, y_pred, average='micro')
+#print(cm)
+#print(f1)
+
+# Applying k-Fold Cross Validation
+from sklearn.model_selection import cross_val_score
+accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = 10)
+print(accuracies.mean())
+print(accuracies.std())
+
+# Applying Grid Search to find the best model and the best parameters
+from sklearn.model_selection import GridSearchCV
+parameters = [
+	             {'C' : [1, 10, 50], 'kernel' : ['rbf'], 'gamma' : [np.linspace(0, 0.5, 10)]} #after performing chose another params around optimal value [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
+              ]
+
+grid_search = GridSearchCV(estimator=classifier, param_grid=parameters, scoring='f1_score', cv=10, n_jobs=-1) # n_jobs = -1 if you use this on large dataset
+grid_search.fit(X_train, y_train)
+best_accuracy = grid_search.best_score_
+best_parameters = grid_search.best_params_
+print(best_accuracy)
+print(best_parameters)
 
 # # Visualising the Training set results
 # from matplotlib.colors import ListedColormap
