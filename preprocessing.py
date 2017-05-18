@@ -33,6 +33,18 @@ dataset['EDUCATION'] = dataset['EDUCATION'].fillna('university', axis = 0)
 
 countMarriage = dataset['MARRIAGE'].value_counts()
 dataset['MARRIAGE'] = dataset['MARRIAGE'].fillna('single', axis = 0)
+dataset.loc[:,'PAY_DEC':'PAY_JUL'] = dataset.loc[:,'PAY_DEC':'PAY_JUL'].replace(to_replace = [-1, -2], value = 0)
+
+billMean = dataset.loc[:,'BILL_AMT_DEC': 'BILL_AMT_JUL'].sum(axis = 1)
+payMean = dataset.loc[:,'PAY_AMT_DEC': 'PAY_AMT_JUL'].sum(axis = 1)
+
+dataset['BILL_AMT_DEC'] = billMean 
+dataset['PAY_AMT_DEC'] = payMean
+
+dataset = dataset.drop(['BILL_AMT_NOV', 'BILL_AMT_OCT', 'BILL_AMT_SEP', 'BILL_AMT_AUG', 'BILL_AMT_JUL'], 1) 
+dataset = dataset.drop(['PAY_AMT_NOV', 'PAY_AMT_OCT', 'PAY_AMT_SEP', 'PAY_AMT_AUG', 'PAY_AMT_JUL'], 1)
+  
+dataset = dataset.drop(['BILL_AMT_DEC', 'PAY_AMT_DEC'], 1)
 
 #print(dataset.info())
 
@@ -83,62 +95,81 @@ sc_X = StandardScaler()
 X_train = sc_X.fit_transform(X_train)
 X_test = sc_X.transform(X_test)
 
-# # Applying Kernel PCA
-# from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-# lda = LinearDiscriminantAnalysis(n_components = 2)
-# X_train = lda.fit_transform(X_train, y_train)
-# X_test = lda.transform(X_test)
+ # Applying Kernel PCA
+#from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+#lda = LinearDiscriminantAnalysis(n_components = 2)
+#X_train = lda.fit_transform(X_train, y_train)
+#X_test = lda.transform(X_test)
 
 # Fitting classifier to the Training set
-from sklearn.svm import SVC
+from sklearn.svm import SVC, NuSVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier, VotingClassifier
+from sklearn.neural_network import MLPClassifier
+from xgboost import XGBClassifier
 
 models = {
-	'LogisticRegression' : LogisticRegression(random_state = 0),
-	'RandomForest' : RandomForestClassifier(n_estimators=100, criterion='entropy', random_state=0),
+	'LogisticRegression' : LogisticRegression(random_state = 0), #max 80,98
+	'RandomForest' : RandomForestClassifier(n_estimators=1000, criterion='entropy', random_state=0, n_jobs = -1, class_weight = 'balanced'),
 	'NaiveBayes' : GaussianNB(),
 	'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
-	'KernelSVM' : SVC(kernel = 'rbf', random_state=0, gamma=0.14),
-	'DecisionTree' : DecisionTreeClassifier(criterion='gini', random_state=0),
-	'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=0, base_estimator=DecisionTreeClassifier(criterion='gini', random_state=0))
+	'KernelSVM' : SVC(kernel = 'rbf', random_state=0),
+     'NuSVM' : NuSVC(nu = 0.3,kernel = 'rbf', random_state = 0),
+	'DecisionTree' : DecisionTreeClassifier(random_state=0),
+	'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=0, base_estimator=DecisionTreeClassifier(criterion='gini', random_state=0)),
+     'MLPClassifier' : MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1),
+     'XGBClassifier' : XGBClassifier(n_estimators = 3000, learning_rate = 0.02, gamma = 0.00000001, subsample = 0.5),
+     'ExtraTreesClassifier' : ExtraTreesClassifier(n_estimators = 50, max_depth = None, random_state = 0, n_jobs = -1)
 }
 
-classifier = models['KernelSVM']
-#classifier.fit(X_train, y_train)
+classifier = models['MLPClassifier']
+#classifier1 = models['MLPClassifier']
+#classifier2 = models['RandomForest']
+#classifier3 = models['AdaBoost']
+#classifier4 = models['XGBClassifier']
 
+
+classifier.fit(X_train, y_train)
+
+#eclf1 = VotingClassifier(estimators=[('lr', classifier), ('rf', classifier1), ('gnb', classifier2), ('ada', classifier3), ('xgb', classifier4)], voting='hard')
+#eclf1 = eclf1.fit(X_train, y_train)
 # Predicting the Test set results
-#y_pred = classifier.predict(X_test)
+y_pred = classifier.predict(X_test)
+#y_pred = eclf1.predict(X_test)
 
 # Making the Confusion Matrix
-#from sklearn.metrics import confusion_matrix, f1_score
-#cm = confusion_matrix(y_test, y_pred)
-#f1 = f1_score(y_test, y_pred, average='micro')
-#print(cm)
-#print(f1)
+from sklearn.metrics import confusion_matrix, f1_score
+cm = confusion_matrix(y_test, y_pred)
+f1 = f1_score(y_test, y_pred, average = 'micro')
+print(cm)
+print(f1)
 
 # Applying k-Fold Cross Validation
-from sklearn.model_selection import cross_val_score
-accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = 10)
-print(accuracies.mean())
-print(accuracies.std())
+#from sklearn.model_selection import cross_val_score, StratifiedKFold
+#folds = StratifiedKFold(n_splits = 10, shuffle = True, random_state = 0)
+#accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = folds, scoring = 'f1_micro')
+#print(accuracies.mean())
+#print(accuracies.std())
 
 # Applying Grid Search to find the best model and the best parameters
-from sklearn.model_selection import GridSearchCV
-parameters = [
-	             {'C' : [1, 10, 50], 'kernel' : ['rbf'], 'gamma' : [np.linspace(0, 0.5, 10)]} #after performing chose another params around optimal value [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
-              ]
-
-grid_search = GridSearchCV(estimator=classifier, param_grid=parameters, scoring='f1_score', cv=10, n_jobs=-1) # n_jobs = -1 if you use this on large dataset
-grid_search.fit(X_train, y_train)
-best_accuracy = grid_search.best_score_
-best_parameters = grid_search.best_params_
-print(best_accuracy)
-print(best_parameters)
+#from sklearn.model_selection import GridSearchCV
+#parameters = [
+#	             {'penalty' : ['l2'], 
+#                  'C' : [0.001, 0.1,1],
+#                  'dual' : [True, False]
+#                  } #after performing chose another params around optimal value [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
+#              ]
+#
+#grid_search = GridSearchCV(estimator=classifier, param_grid=parameters, scoring='f1_micro', cv=folds, n_jobs=-1) # n_jobs = -1 if you use this on large dataset
+#grid_search.fit(X_train, y_train)
+#best_accuracy = grid_search.best_score_
+#best_parameters = grid_search.best_params_
+#print(best_accuracy)
+#print(best_parameters)
 
 # # Visualising the Training set results
 # from matplotlib.colors import ListedColormap
