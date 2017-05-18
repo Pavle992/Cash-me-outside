@@ -19,12 +19,7 @@ df.to_csv('train.csv', index=False)
 
 dataset = pd.read_csv('train.csv', sep=';')
 
-#print(dataset.head())
-
-#print(dataset.info())
-
 #Prepricessing categorical values
-
 countSex = dataset['SEX'].value_counts()
 dataset['SEX'] = dataset['SEX'].fillna('F', axis = 0)
 
@@ -33,8 +28,6 @@ dataset['EDUCATION'] = dataset['EDUCATION'].fillna('university', axis = 0)
 
 countMarriage = dataset['MARRIAGE'].value_counts()
 dataset['MARRIAGE'] = dataset['MARRIAGE'].fillna('single', axis = 0)
-
-#print(dataset.info())
 
 # Birthdate to date preprocessing
 from datetime import date, datetime
@@ -52,8 +45,6 @@ imputer = Imputer(missing_values = np.nan, strategy="median", axis = 1)
 
 xx = imputer.fit_transform(dataset.iloc[:, 5])
 dataset.iloc[:, 5] = xx.flatten()
-
-#print(dataset.info())
 
 # Encoding categorical variables
 
@@ -83,7 +74,7 @@ sc_X = StandardScaler()
 X_train = sc_X.fit_transform(X_train)
 X_test = sc_X.transform(X_test)
 
-# # Applying Kernel PCA
+# # Applying LDA
 # from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 # lda = LinearDiscriminantAnalysis(n_components = 2)
 # X_train = lda.fit_transform(X_train, y_train)
@@ -97,6 +88,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import AdaBoostClassifier
+#from sklearn.ensemble import VotingClassifier
 
 models = {
 	'LogisticRegression' : LogisticRegression(random_state = 0),
@@ -106,13 +98,15 @@ models = {
 	'KernelSVC' : SVC(kernel = 'rbf', random_state=0),
 	'DecisionTree' : DecisionTreeClassifier(criterion='gini', random_state=0),
 	'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=0, base_estimator=DecisionTreeClassifier(criterion='entropy', random_state=0))
+
 }
 
+
 classifier = models['KernelSVC']
-# classifier.fit(X_train, y_train)
+classifier.fit(X_train, y_train)
 
 # Predicting the Test set results
-#y_pred = classifier.predict(X_test)
+y_pred = classifier.predict(X_test)
 
 # #Making the Confusion Matrix
 # from sklearn.metrics import confusion_matrix, f1_score
@@ -124,22 +118,22 @@ classifier = models['KernelSVC']
 # Applying k-Fold Cross Validation
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 folds = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
-# accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = folds, scoring='f1_micro')
-# print(accuracies.mean())
-# print(accuracies.std())
+accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = folds, scoring='f1_micro')
+print(accuracies.mean())
+print(accuracies.std())
 
-# Applying Grid Search to find the best model and the best parameters
-from sklearn.model_selection import GridSearchCV
-parameters = [
-	             {'C' : [1, 10], 'kernel' : ['rbf'], 'gamma' : np.linspace(0, 0.5, 3).tolist()} #after performing chose another params around optimal value [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
-              ]
+# # Applying Grid Search to find the best model and the best parameters
+# from sklearn.model_selection import GridSearchCV
+# parameters = [
+# 	             {'C' : [1, 10], 'kernel' : ['rbf'], 'gamma' : np.linspace(0, 0.5, 3).tolist()} #after performing chose another params around optimal value [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
+#               ]
 
-grid_search = GridSearchCV(estimator=classifier, param_grid=parameters, scoring='f1_micro', cv=folds) # n_jobs = -1 if you use this on large dataset
-grid_search.fit(X_train, y_train)
-best_accuracy = grid_search.best_score_
-best_parameters = grid_search.best_params_
-print(best_accuracy)
-print(best_parameters)
+# grid_search = GridSearchCV(estimator=classifier, param_grid=parameters, scoring='f1_micro', cv=folds) # n_jobs = -1 if you use this on large dataset
+# grid_search.fit(X_train, y_train)
+# best_accuracy = grid_search.best_score_
+# best_parameters = grid_search.best_params_
+# print(best_accuracy)
+# print(best_parameters)
 
 # # Visualising the Training set results
 # from matplotlib.colors import ListedColormap
