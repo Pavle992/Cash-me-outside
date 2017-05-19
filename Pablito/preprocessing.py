@@ -19,7 +19,7 @@ df.to_csv('train.csv', index=False)
 
 dataset = pd.read_csv('../train.csv', sep=';')
 
-#Prepricessing categorical values
+# Prepricessing categorical values
 countSex = dataset['SEX'].value_counts()
 dataset['SEX'] = dataset['SEX'].fillna('F', axis = 0)
 

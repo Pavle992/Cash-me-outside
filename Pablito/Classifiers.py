@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 
 from sklearn.preprocessing import StandardScaler
 
-from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.model_selection import cross_val_score, StratifiedKFold, GridSearchCV
 
 from matplotlib.colors import ListedColormap
 
@@ -27,15 +27,18 @@ class Classifiers(object):
 			Initalizes the dictionary with most important classifiers. 
 			As default or current classifier Kernel Support Vector Classifier is selected.
 		"""
+		self.random_seed = 0
+
 		self.models = {
-			'LogisticRegression' : LogisticRegression(random_state = 0),
-			'RandomForest' : RandomForestClassifier(n_estimators=100, criterion='entropy', random_state=0),
+			'LogisticRegression' : LogisticRegression(random_state = self.random_seed),
+			'RandomForest' : RandomForestClassifier(n_estimators=100, criterion='entropy', random_state=self.random_seed),
 			'NaiveBayes' : GaussianNB(),
 			'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
-			'KernelSVC' : SVC(kernel = 'rbf', random_state=0),
-			'DecisionTree' : DecisionTreeClassifier(criterion='gini', random_state=0),
-			'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=0, base_estimator=DecisionTreeClassifier(criterion='entropy', random_state=0))
+			'KernelSVC' : SVC(kernel = 'rbf', random_state=self.random_seed),
+			'DecisionTree' : DecisionTreeClassifier(criterion='gini', random_state=self.random_seed),
+			'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=self.random_seed, base_estimator=DecisionTreeClassifier(criterion='entropy', random_state=self.random_seed))
 		}
+
 		self.current = self.models["KernelSVC"]
 
 	def listClassifiers(self):
@@ -60,6 +63,10 @@ class Classifiers(object):
 		else:
 			print(name + " classifier does not exist")
 
+	def setRanomSeed(self, random_seed):
+
+		self.random_seed = random_seed
+
 	def fit(self, X_train, Y_train):
 		"""
 			Fit the data with curent classifier
@@ -67,6 +74,7 @@ class Classifiers(object):
 		self.current.fit(X_train, Y_train)
 
 	def predict(self, X_test):
+   		
    		return self.current.predict(X_test)
 	
 	def LDA(self, X_train, Y_train, X_test, numComponents):
@@ -78,13 +86,13 @@ class Classifiers(object):
 		return (x_train, x_test)
 
 
-	def holdOutSplit(self, X, Y, test_size, random_seed, stratify):
+	def holdOutSplit(self, X, Y, test_size, stratify):
 		"""
 			This function implements hold-out split.X_test
 			Return:
 				(X_train, X_test, y_train, y_test)
 		"""
-		return train_test_split( X, Y, test_size=test_size, random_state=random_seed, stratify=stratify)
+		return train_test_split( X, Y, test_size=test_size, random_state=self.random_seed, stratify=stratify)
 
 	def scale(self, X_train, X_test):
 		"""
@@ -96,14 +104,30 @@ class Classifiers(object):
 
 		return (x_train, x_test)
 
-	def CVScore(self, X_train, Y_train, num_splits, random_state=0, shuffle=True):
+	def CVScore(self, X_train, Y_train, num_splits, shuffle=True):
 		"""
 			This Function performs cross validation with num_splits
 		"""
-		folds = StratifiedKFold(n_splits=num_splits, shuffle=shuffle, random_state=random_state)
+		folds = StratifiedKFold(n_splits=num_splits, shuffle=shuffle, random_state=self.random_seed)
 		accuracies = cross_val_score(estimator = self.current, X = X_train, y = Y_train, cv = folds, scoring='f1_micro')
 		
 		return accuracies
+
+	def GridSearch(self, X_train, Y_train, parameters, folds):
+		"""
+			This function implements gridSearch.
+			Example of parameters:
+				parameters = [
+ 	            	{'C' : [1, 10], 'kernel' : ['rbf'], 'gamma' : np.linspace(0, 0.5, 3).tolist()} #after performing chose another params around optimal value [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
+             	]
+            Folds parameter can be integer or object like StratifiedKFold
+		"""
+		grid_search = GridSearchCV(estimator=self.current, param_grid=parameters, scoring='f1_micro', cv=folds) # n_jobs = -1 if you use this on large dataset
+		grid_search.fit(X_train, y_train)
+		best_accuracy = grid_search.best_score_
+		best_parameters = grid_search.best_params_
+
+		return (best_accuracy, best_parameters)
 
 	def plotResults(self, X, Y, title="Classifier", xlabel="LD1", ylabel="LD2"):
 		"""
@@ -126,3 +150,4 @@ class Classifiers(object):
 		plt.ylabel(ylabel)
 		plt.legend()
 		plt.show()
+
