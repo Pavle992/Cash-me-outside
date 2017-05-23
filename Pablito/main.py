@@ -15,14 +15,22 @@ X_train, X_test = models.scale(X_train, X_test)
 #X_train, X_test = models.minMaxScale(X_train, X_test)
 
 # Applying Linear Discriminat Analysis
-#X_train, X_test = models.LDA(X_train, Y_train, X_test, 2)
+X_train, X_test = models.LDA(X_train, Y_train, X_test, 2)
 
 # Fitting classifier to the Training set
-models.setClassifier("KernelSVC")
+models.setClassifier("NaiveBayes")
 models.fit(X_train, Y_train)
 
 # Predicting the Test set results
 Y_pred = models.predict(X_test)
+
+#Making the Confusion Matrix
+from sklearn.metrics import confusion_matrix, f1_score
+cm = confusion_matrix(Y_test, Y_pred)
+f1 = f1_score(Y_test, Y_pred, average='micro')
+print(cm)
+print(f1)
+
 
 # Applying k-Fold Cross Validation
 accuracy = models.CVScore(X_train, Y_train, 10)

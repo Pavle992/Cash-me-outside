@@ -55,7 +55,7 @@ dataset.iloc[:, 4] = labelEncoder.fit_transform(dataset.iloc[:, 4]).flatten()
 
 oneHotEncoder = OneHotEncoder(categorical_features=[2, 3, 4])
 X = oneHotEncoder.fit_transform(dataset.values).toarray()
-X = np.delete(X, [0, 2, 5], 1)
+X = np.delete(X, [0, 2, 6], 1) # prepravka! sad se brisu prave kolone
 
 # Remove Customer ID
 X = np.delete(X, 6, 1)
@@ -63,6 +63,23 @@ X = np.delete(X, 6, 1)
 # Features
 x = X[:, :-1]
 y = X[:, -1]
+
+""""
+Note: Columns in Numpy for x nDarray
+
+Columns:
+	0) SEX
+  1-3) Education
+  4-5) Marrage
+    6) Limit Balance
+    7) Birth Date
+ 8-13) PAY_DEC - PAY_JULY
+14-19) BILL_AMOUNT_DEC - BILL_AMOUNT_JULY
+20-25) PAY_AMOUNT_DEC - PAY_AMOUNT_JULY
+   26) DEFAULT_PAYMENT		
+"""
+
+
 
 #Splitting the dataset into training and test set
 from sklearn.model_selection import train_test_split
