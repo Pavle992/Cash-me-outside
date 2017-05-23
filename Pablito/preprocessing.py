@@ -46,7 +46,11 @@ imputer = Imputer(missing_values = np.nan, strategy="median", axis = 1)
 xx = imputer.fit_transform(dataset.iloc[:, 5])
 dataset.iloc[:, 5] = xx.flatten()
 
-# Encoding categorical variables
+# print(dataset.head())
+# print(dataset.info())
+# print(dataset.describe())
+
+# # Encoding categorical variables
 
 labelEncoder = LabelEncoder()
 dataset.iloc[:, 2] = labelEncoder.fit_transform(dataset.iloc[:, 2]).flatten()
@@ -59,7 +63,9 @@ X = np.delete(X, [0, 2, 5], 1)
 
 # Remove Customer ID
 X = np.delete(X, 6, 1)
-
+# Replace all negative with zero value
+#X = np.where(X<0, 0, X)
 # Features
 x = X[:, :-1]
 y = X[:, -1]
+

@@ -1,21 +1,22 @@
 # Import shikit learn module classes
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, ExtraTreesClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import AdaBoostClassifier
+from sklearn.neural_network import MLPClassifier
 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
-from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, KernelCenterer
 
-from sklearn.preprocessing import StandardScaler
-
-from sklearn.model_selection import cross_val_score, StratifiedKFold, GridSearchCV
+from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold, GridSearchCV
 
 from matplotlib.colors import ListedColormap
+
+from sklearn.feature_selection import SelectFromModel
+from sklearn.svm import LinearSVC
 
 class Classifiers(object):
 	"""
@@ -36,7 +37,8 @@ class Classifiers(object):
 			'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
 			'KernelSVC' : SVC(kernel = 'rbf', random_state=self.random_seed),
 			'DecisionTree' : DecisionTreeClassifier(criterion='gini', random_state=self.random_seed),
-			'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=self.random_seed, base_estimator=DecisionTreeClassifier(criterion='entropy', random_state=self.random_seed))
+			'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=self.random_seed, base_estimator=DecisionTreeClassifier(criterion='entropy', random_state=self.random_seed)),
+			'MLP' : MLPClassifier(solver='lbfgs', alpha=0.001, hidden_layer_sizes=(5, 2), random_state=self.random_seed)
 		}
 
 		self.current = self.models["KernelSVC"]
@@ -104,6 +106,15 @@ class Classifiers(object):
 
 		return (x_train, x_test)
 
+	def minMaxScale(self, X_train, X_test):
+
+		mm_X = MinMaxScaler()
+		x_train = mm_X.fit_transform(X_train)
+		x_test = mm_X.transform(X_test)
+
+		return (x_train, x_test)
+
+
 	def CVScore(self, X_train, Y_train, num_splits, shuffle=True):
 		"""
 			This Function performs cross validation with num_splits
@@ -151,3 +162,16 @@ class Classifiers(object):
 		plt.legend()
 		plt.show()
 
+	def l1FeatureSelection(self, X, Y):
+		
+		lsvc = LinearSVC(C=0.01, penalty="l1", dual=False).fit(X, Y)
+		model = SelectFromModel(lsvc, prefit=True)
+		X_new = model.transform(X)
+		return X_new
+
+	def treeBasedFeatureSelection(self, X, Y):
+		clf = ExtraTreesClassifier()
+		clf = clf.fit(X, Y)
+		model = SelectFromModel(clf, prefit=True)
+		X_new = model.transform(X)
+		return X_new
