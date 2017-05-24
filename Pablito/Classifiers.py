@@ -32,7 +32,7 @@ class Classifiers(object):
 
 		self.models = {
 			'LogisticRegression' : LogisticRegression(random_state = self.random_seed),
-			'RandomForest' : RandomForestClassifier(n_estimators=100, criterion='entropy', random_state=self.random_seed),
+			'RandomForest' : RandomForestClassifier(n_estimators=30, criterion='entropy', random_state=self.random_seed),
 			'NaiveBayes' : GaussianNB(),
 			'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
 			'KernelSVC' : SVC(kernel = 'rbf', random_state=self.random_seed),
@@ -175,3 +175,6 @@ class Classifiers(object):
 		model = SelectFromModel(clf, prefit=True)
 		X_new = model.transform(X)
 		return X_new
+
+
+	

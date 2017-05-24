@@ -44,25 +44,36 @@ Columns:
 
 # Percentage for PAY_AMOUNT
 
-print(x[:, 6])
-print("###########################3")
-print(x[:, 20:26])
-print("###########################3")
+
 limit_balance = x[:, 6]
 pay_amount = x[:, 20:26].T
 
 new_data = np.divide(pay_amount, limit_balance)
 x[:, 20:26] = new_data.T
-print("###########################3")
-print(x[:5, 20:26])
+
+# Add new column - Mean of PAY_AMOUNTS
+new_col = x[:, 20:26].mean(axis=1)
+new_col = new_col.reshape(-1, 1)
+
+x = np.append(x, new_col, 1)
+x = np.delete(x, [20, 21, 22, 23, 24, 25], 1)
+
 
 # Percentage for BILL_AMOUNT
 
-limit_balance = x[:, 6]
 bill_amount = x[:, 14:20].T
 
 new_data = np.divide(bill_amount, limit_balance)
 x[:, 14:20] = new_data.T
 
+print(x[:1, 14:20])
+# Add new column - Mean of BILL_AMOUNT
+new_col = x[:, 14:20].mean(axis=1)
+new_col = new_col.reshape(-1, 1)
 
+x = np.append(x, new_col, 1)
+x = np.delete(x, [14, 15, 16, 17, 18, 19], 1)
+
+print(new_col)
+print(x[:10, :])
 

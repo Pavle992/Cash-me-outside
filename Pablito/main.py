@@ -15,10 +15,10 @@ X_train, X_test = models.scale(X_train, X_test)
 #X_train, X_test = models.minMaxScale(X_train, X_test)
 
 # Applying Linear Discriminat Analysis
-X_train, X_test = models.LDA(X_train, Y_train, X_test, 2)
+#X_train, X_test = models.LDA(X_train, Y_train, X_test, 2)
 
 # Fitting classifier to the Training set
-models.setClassifier("NaiveBayes")
+models.setClassifier("LogisticRegression")
 models.fit(X_train, Y_train)
 
 # Predicting the Test set results
@@ -33,7 +33,7 @@ print(f1)
 
 
 # Applying k-Fold Cross Validation
-accuracy = models.CVScore(X_train, Y_train, 10)
+accuracy = models.CVScore(x, y, 10)
 
 print(accuracy.mean())
 print(accuracy.std())
