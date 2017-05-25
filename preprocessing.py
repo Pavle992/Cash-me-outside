@@ -191,7 +191,7 @@ print(f1)
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 from sklearn.metrics import accuracy_score
 folds= StratifiedKFold(shuffle=True, n_splits=10, random_state=0)
-accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = folds)
+accuracies = cross_val_score(estimator = classifier, X = x, y = y_train, cv = folds, scoring='f1_micro')
 # acci=accuracy_score(y_test,y_pred)
 # print(acci)
 print(accuracies.mean())
