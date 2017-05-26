@@ -1,3 +1,4 @@
+import numpy as np
 # Import shikit learn module classes
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
@@ -18,6 +19,8 @@ from matplotlib.colors import ListedColormap
 from sklearn.feature_selection import SelectFromModel
 from sklearn.svm import LinearSVC
 
+import seaborn as sns
+
 class Classifiers(object):
 	"""
 		Classifiers class contains multiple classifiers that can be used for predictions.
@@ -32,7 +35,7 @@ class Classifiers(object):
 
 		self.models = {
 			'LogisticRegression' : LogisticRegression(random_state = self.random_seed),
-			'RandomForest' : RandomForestClassifier(n_estimators=30, criterion='entropy', random_state=self.random_seed),
+			'RandomForest' : RandomForestClassifier(n_estimators=100, criterion='entropy', random_state=self.random_seed),
 			'NaiveBayes' : GaussianNB(),
 			'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
 			'KernelSVC' : SVC(kernel = 'rbf', random_state=self.random_seed),
@@ -177,4 +180,13 @@ class Classifiers(object):
 		return X_new
 
 
-	
+	def visualizeCorrelation(self, data):
+		#ata=X[:300,:].transpose()
+		R = np.corrcoef(data)
+		pcolor(R)
+		colorbar()
+		yticks(arange(0,26),range(0,26))
+		xticks(arange(0,26),range(0,26))
+		show()
+
+		print(R)
