@@ -35,8 +35,11 @@ countMarriage = dataset['MARRIAGE'].value_counts()
 dataset['MARRIAGE'] = dataset['MARRIAGE'].fillna('single', axis = 0)
 dataset.loc[:,'PAY_DEC':'PAY_JUL'] = dataset.loc[:,'PAY_DEC':'PAY_JUL'].replace(to_replace = [-1, -2], value = 0)
 
-billMean = dataset.loc[:,'BILL_AMT_DEC': 'BILL_AMT_JUL'].sum(axis = 1)
-payMean = dataset.loc[:,'PAY_AMT_DEC': 'PAY_AMT_JUL'].sum(axis = 1)
+#DATA BINNING
+#dataset.describe()
+
+billMean = dataset.loc[:,'BILL_AMT_DEC': 'BILL_AMT_JUL'].mean(axis = 1)
+payMean = dataset.loc[:,'PAY_AMT_DEC': 'PAY_AMT_JUL'].mean(axis = 1)
 
 dataset['BILL_AMT_DEC'] = billMean 
 dataset['PAY_AMT_DEC'] = payMean
@@ -44,9 +47,14 @@ dataset['PAY_AMT_DEC'] = payMean
 dataset = dataset.drop(['BILL_AMT_NOV', 'BILL_AMT_OCT', 'BILL_AMT_SEP', 'BILL_AMT_AUG', 'BILL_AMT_JUL'], 1) 
 dataset = dataset.drop(['PAY_AMT_NOV', 'PAY_AMT_OCT', 'PAY_AMT_SEP', 'PAY_AMT_AUG', 'PAY_AMT_JUL'], 1)
   
-dataset = dataset.drop(['BILL_AMT_DEC', 'PAY_AMT_DEC'], 1)
+#dataset = dataset.drop(['BILL_AMT_DEC', 'PAY_AMT_DEC'], 1)
 
 #print(dataset.info())
+dataset['DEFAULT PAYMENT JAN'].value_counts()
+
+#26884 total
+# 20940 0
+# 5944 1
 
 # Birthdate to date preprocessing
 from datetime import date, datetime
@@ -85,6 +93,8 @@ X = np.delete(X, 6, 1)
 x = X[:, :-1]
 y = X[:, -1]
 
+
+
 #Splitting the dataset into training and test set
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split( x, y, test_size=0.25, random_state=0, stratify=y)
@@ -92,8 +102,18 @@ X_train, X_test, y_train, y_test = train_test_split( x, y, test_size=0.25, rando
 #Feature scaling
 from sklearn.preprocessing import StandardScaler
 sc_X = StandardScaler()
+
+#X_train = x
+#y_train = y
+
 X_train = sc_X.fit_transform(X_train)
 X_test = sc_X.transform(X_test)
+
+from imblearn.over_sampling import SMOTE, ADASYN
+
+sm = SMOTE(random_state=42, k_neighbors = 10, kind = 'svm', out_step = 0.5, m_neighbors = 20)
+#adasm = ADASYN(random_state=42, n_neighbors = 5)
+X_train, y_train = sm.fit_sample(X_train, y_train)
 
  # Applying Kernel PCA
 #from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -108,14 +128,14 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier, VotingClassifier
+from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier, VotingClassifier, IsolationForest
 from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier
 
 models = {
 	'LogisticRegression' : LogisticRegression(random_state = 0), #max 80,98
-	'RandomForest' : RandomForestClassifier(n_estimators=1000, criterion='entropy', random_state=0, n_jobs = -1, class_weight = 'balanced'),
-	'NaiveBayes' : GaussianNB(),
+	'RandomForest' : RandomForestClassifier(n_estimators=1000, criterion='entropy', random_state=0, n_jobs = -1),
+	'NaiveBayes' : GaussianNB(), #0.51
 	'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
 	'KernelSVM' : SVC(kernel = 'rbf', random_state=0),
      'NuSVM' : NuSVC(nu = 0.3,kernel = 'rbf', random_state = 0),
@@ -123,18 +143,18 @@ models = {
 	'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=0, base_estimator=DecisionTreeClassifier(criterion='gini', random_state=0)),
      'MLPClassifier' : MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1),
      'XGBClassifier' : XGBClassifier(n_estimators = 3000, learning_rate = 0.02, gamma = 0.00000001, subsample = 0.5),
-     'ExtraTreesClassifier' : ExtraTreesClassifier(n_estimators = 50, max_depth = None, random_state = 0, n_jobs = -1)
+     'ExtraTreesClassifier' : ExtraTreesClassifier(n_estimators = 50, max_depth = None, random_state = 0, n_jobs = -1),
+     'IsolationForest' : IsolationForest()
 }
 
-classifier = models['MLPClassifier']
+classifier = models['LogisticRegression']
 #classifier1 = models['MLPClassifier']
 #classifier2 = models['RandomForest']
 #classifier3 = models['AdaBoost']
 #classifier4 = models['XGBClassifier']
 
-
+#sample_weight = np.array([7 if i == 1 else 1 for i in y_train])
 classifier.fit(X_train, y_train)
-
 #eclf1 = VotingClassifier(estimators=[('lr', classifier), ('rf', classifier1), ('gnb', classifier2), ('ada', classifier3), ('xgb', classifier4)], voting='hard')
 #eclf1 = eclf1.fit(X_train, y_train)
 # Predicting the Test set results
@@ -144,14 +164,17 @@ y_pred = classifier.predict(X_test)
 # Making the Confusion Matrix
 from sklearn.metrics import confusion_matrix, f1_score
 cm = confusion_matrix(y_test, y_pred)
-f1 = f1_score(y_test, y_pred, average = 'micro')
+f1 = f1_score(y_test, y_pred, average = 'binary', pos_label = 1)
 print(cm)
 print(f1)
 
 # Applying k-Fold Cross Validation
 #from sklearn.model_selection import cross_val_score, StratifiedKFold
 #folds = StratifiedKFold(n_splits = 10, shuffle = True, random_state = 0)
-#accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = folds, scoring = 'f1_micro')
+#
+#
+#
+#accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = folds, scoring = 'f1')
 #print(accuracies.mean())
 #print(accuracies.std())
 
