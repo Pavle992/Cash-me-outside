@@ -9,6 +9,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.decomposition import PCA, KernelPCA
 
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, KernelCenterer
 
@@ -35,7 +36,7 @@ class Classifiers(object):
 
 		self.models = {
 			'LogisticRegression' : LogisticRegression(random_state = self.random_seed),
-			'RandomForest' : RandomForestClassifier(n_estimators=100, criterion='entropy', random_state=self.random_seed),
+			'RandomForest' : RandomForestClassifier(n_estimators=200, criterion='entropy', random_state=self.random_seed),
 			'NaiveBayes' : GaussianNB(),
 			'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
 			'KernelSVC' : SVC(kernel = 'rbf', random_state=self.random_seed),
@@ -91,6 +92,24 @@ class Classifiers(object):
 		return (x_train, x_test)
 
 
+	def PCA(self, X_train, X_test, numComponents):
+    	
+		pca = PCA(n_components = numComponents)
+		x_train = pca.fit_transform(X_train)
+		x_test = pca.transform(X_test)
+		explained_variance = pca.explained_variance_
+		#print(explained_variance)
+
+		return (x_train, x_test)
+
+	def KernelPCA(self, X_train, X_test, y_train, numComponents):
+    	
+		kpcn = KernelPCA(n_components=2, kernel='rbf')
+		X_train = kpcn.fit_transform(X_train, y_train)
+		X_test = kpcn.transform(X_test)
+		#print(explained_variance)	
+		return (x_train, x_test)
+
 	def holdOutSplit(self, X, Y, test_size, stratify):
 		"""
 			This function implements hold-out split.X_test
@@ -123,7 +142,7 @@ class Classifiers(object):
 			This Function performs cross validation with num_splits
 		"""
 		folds = StratifiedKFold(n_splits=num_splits, shuffle=shuffle, random_state=self.random_seed)
-		accuracies = cross_val_score(estimator = self.current, X = X_train, y = Y_train, cv = folds, scoring='f1_micro')
+		accuracies = cross_val_score(estimator = self.current, X = X_train, y = Y_train, cv = folds, scoring='f1')
 		
 		return accuracies
 

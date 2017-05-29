@@ -4,16 +4,24 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def visualizeCorrelations(df, startIndex, stopIndex):
+def visualizeCorrelations(df):
 	sns.set(context="paper", font="monospace")
+	#df = df.iloc[:, :]
 	g = df.corr()
-	plt.figure(figsize=(20,14))
-	_ = sns.heatmap(g.iloc[startIndex:stopIndex+1, :], annot =True)
-	_.set_xticklabels(labels = df.columns.values,rotation=90)
-	_.set_yticklabels(labels = df.columns.values,rotation=0)
+	plt.figure(figsize=(16,24))
+	_ = sns.heatmap(g.iloc[:, :], annot =True)
+	sns.plt.xticks(rotation=60)
+	sns.plt.yticks(rotation=60)
 	sns.plt.show()
+
+def visualizeDistribution(df, colname):
+	pass
+
 
 df = pd.read_csv("train_full.csv", sep=';')
 df = df.drop('CUST_COD', 1)
 
-visualizeCorrelations(df, 0, 10)
+visualizeCorrelations(df)
+# print(df.shape)
+
+# print(df.info())

@@ -48,8 +48,8 @@ dataset.iloc[:, 5] = xx.flatten()
 
 #dataset.to_csv('train_full.csv', sep=';', index=False)
 
-print(dataset.head())
-print(dataset.info())
+# print(dataset.head())
+# print(dataset.info())
 # print(dataset.describe())
 # print(dataset[:])
 
@@ -67,10 +67,11 @@ X = np.delete(X, [0, 4, 7], 1)
 # Remove Customer ID
 X = np.delete(X, 6, 1)
 # Replace all negative with zero value
-#X = np.where(X<0, 0, X)
+X = np.where(X<0, 0, X)
 # Features
 x = X[:, :-1]
 y = X[:, -1]
+
 
 #print(dataset.columns)
 
@@ -111,12 +112,12 @@ bill_amount = x[:, 14:20].T
 new_data = np.divide(bill_amount, limit_balance)
 x[:, 14:20] = new_data.T
 
-# Add new column - Mean of BILL_AMOUNT
-new_col = x[:, 14:20].mean(axis=1)
-new_col = new_col.reshape(-1, 1)
+# # Add new column - Mean of BILL_AMOUNT
+# new_col = x[:, 14:20].mean(axis=1)
+# new_col = new_col.reshape(-1, 1)
 
-x = np.append(x, new_col, 1)
-x = np.delete(x, [14, 15, 16, 17, 18, 19], 1)
+# x = np.append(x, new_col, 1)
+# x = np.delete(x, [14, 15, 16, 17, 18, 19], 1)
 
 # # PAY_DEC - PAY_JUL
 
