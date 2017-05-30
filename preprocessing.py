@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.preprocessing import Imputer, LabelEncoder, OneHotEncoder
-
+from Pablito.visualization import visualizeCorrelations, scatterFeatures
 # Importing the dataset
 """
 df = pd.read_csv("Project Train Dataset.csv")
@@ -17,7 +17,6 @@ dataset = pd.read_csv('train.csv', sep=';')
 #print(dataset.head())
 
 #print(dataset.info())
-
 #Prepricessing categorical values
 
 countSex = dataset['SEX'].value_counts()
@@ -34,12 +33,15 @@ dataset.loc[:,'PAY_DEC':'PAY_JUL'] = dataset.loc[:,'PAY_DEC':'PAY_JUL'].replace(
 
 billMean = dataset.loc[:,'BILL_AMT_DEC': 'BILL_AMT_JUL'].mean(axis = 1)
 payMean = dataset.loc[:,'PAY_AMT_DEC': 'PAY_AMT_JUL'].mean(axis = 1)
+#payMax = dataset.loc[:,'PAY_DEC': 'PAY_JUL'].sum(axis = 1)
 
 dataset['BILL_AMT_DEC'] = billMean 
 dataset['PAY_AMT_DEC'] = payMean
+#dataset['PAY_DEC'] = payMax
 
 dataset = dataset.drop(['BILL_AMT_NOV', 'BILL_AMT_OCT', 'BILL_AMT_SEP', 'BILL_AMT_AUG', 'BILL_AMT_JUL'], 1) 
 dataset = dataset.drop(['PAY_AMT_NOV', 'PAY_AMT_OCT', 'PAY_AMT_SEP', 'PAY_AMT_AUG', 'PAY_AMT_JUL'], 1)
+#dataset = dataset.drop(['PAY_NOV', 'PAY_OCT', 'PAY_SEP', 'PAY_AUG', 'PAY_JUL'], 1)
   
 #dataset = dataset.drop(['BILL_AMT_DEC', 'PAY_AMT_DEC'], 1)
 
@@ -68,6 +70,8 @@ xx = imputer.fit_transform(dataset.iloc[:, 5])
 dataset.iloc[:, 5] = xx.flatten()
 
 #print(dataset.info())
+#visualizeCorrelations(dataset)
+#scatterFeatures(dataset, 'LIMIT_BAL', 'DEFAULT PAYMENT JAN')
 
 # Encoding categorical variables
 
@@ -75,17 +79,34 @@ labelEncoder = LabelEncoder()
 dataset.iloc[:, 2] = labelEncoder.fit_transform(dataset.iloc[:, 2]).flatten()
 dataset.iloc[:, 3] = labelEncoder.fit_transform(dataset.iloc[:, 3]).flatten()
 dataset.iloc[:, 4] = labelEncoder.fit_transform(dataset.iloc[:, 4]).flatten()
-
 oneHotEncoder = OneHotEncoder(categorical_features=[2, 3, 4])
 X = oneHotEncoder.fit_transform(dataset.values).toarray()
-X = np.delete(X, [0, 2, 5], 1)
-
+X = np.delete(X, [0, 4, 6], 1)
+# X = np.delete(X, [0, 2, 5], 1)
+#print(X[0,:])
 # Remove Customer ID
 X = np.delete(X, 6, 1)
+
+# Remove BirthDate?
+X = np.delete(X, 7, 1)
+
+# Remove PAY_AUG
+X = np.delete(X, 11, 1)
+
+# Remove PAY_SEP
+X = np.delete(X, 10, 1)
 
 # Features
 x = X[:, :-1]
 y = X[:, -1]
+
+# import statsmodels.formula.api as sm
+# x = np.append(arr=np.ones((x.shape[0], 1)).astype(int), values=x, axis=1)
+# x = np.delete(x, 2, 1)
+
+# regressor_OLS = sm.OLS(endog=y, exog=x).fit()
+
+# print(regressor_OLS.summary())
 
 
 
@@ -108,11 +129,13 @@ from imblearn.over_sampling import SMOTE, ADASYN
 sm = SMOTE(random_state=42, k_neighbors = 10, kind = 'svm', out_step = 0.5, m_neighbors = 20)
 #adasm = ADASYN(random_state=42, n_neighbors = 5)
 X_train, y_train = sm.fit_sample(X_train, y_train)
- # Applying Kernel PCA
-#from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-#lda = LinearDiscriminantAnalysis(n_components = 2)
-#X_train = lda.fit_transform(X_train, y_train)
-#X_test = lda.transform(X_test)
+# print(y_train.sum())
+# print(y_train.shape)
+# # Applying Kernel PCA
+# from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+# lda = LinearDiscriminantAnalysis(n_components = 2)
+# X_train = lda.fit_transform(X_train, y_train)
+# X_test = lda.transform(X_test)
 
 # Fitting classifier to the Training set
 from sklearn.svm import SVC, NuSVC
@@ -126,8 +149,8 @@ from sklearn.neural_network import MLPClassifier
 #from xgboost import XGBClassifier
 
 models = {
-	'LogisticRegression' : LogisticRegression(random_state = 0), #max 80,98
-	'RandomForest' : RandomForestClassifier(n_estimators=1000, criterion='entropy', random_state=0, n_jobs = -1),
+	'LogisticRegression' : LogisticRegression(random_state = 0, solver='sag', penalty='l2'), #max 80,98
+	'RandomForest' : RandomForestClassifier(n_estimators=200, criterion='entropy', random_state=0, n_jobs = -1),
 	'NaiveBayes' : GaussianNB(), #0.51
 	'KNN' : KNeighborsClassifier(n_neighbors=10, metric='minkowski', p=2),
 	'KernelSVM' : SVC(kernel = 'rbf', random_state=0),

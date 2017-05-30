@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.preprocessing import Imputer, LabelEncoder, OneHotEncoder
-
 # Importing the dataset
 """
 df = pd.read_csv("Project Train Dataset.csv")
@@ -62,7 +61,7 @@ dataset.iloc[:, 4] = labelEncoder.fit_transform(dataset.iloc[:, 4]).flatten()
 
 oneHotEncoder = OneHotEncoder(categorical_features=[2, 3, 4])
 X = oneHotEncoder.fit_transform(dataset.values).toarray()
-X = np.delete(X, [0, 4, 7], 1)
+X = np.delete(X, [0, 2, 5], 1)
 
 # Remove Customer ID
 X = np.delete(X, 6, 1)
@@ -98,12 +97,12 @@ pay_amount = x[:, 20:26].T
 new_data = np.divide(pay_amount, limit_balance)
 x[:, 20:26] = new_data.T
 
-# Add new column - Mean of PAY_AMOUNTS
-new_col = x[:, 20:26].mean(axis=1)
-new_col = new_col.reshape(-1, 1)
+# # Add new column - Mean of PAY_AMOUNTS
+# new_col = x[:, 20:26].mean(axis=1)
+# new_col = new_col.reshape(-1, 1)
 
-x = np.append(x, new_col, 1)
-x = np.delete(x, [20, 21, 22, 23, 24, 25], 1)
+# x = np.append(x, new_col, 1)
+# x = np.delete(x, [20, 21, 22, 23, 24, 25], 1)
 
 # Percentage for BILL_AMOUNT
 
@@ -128,4 +127,3 @@ x[:, 14:20] = new_data.T
 
 # x = np.append(x, new_col, 1)
 # x = np.delete(x, [8, 9, 10, 11, 12, 13], 1)
-
