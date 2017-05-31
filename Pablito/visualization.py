@@ -9,21 +9,20 @@ def visualizeCorrelations(df):
 	#df = df.iloc[:, :]
 	g = df.corr()
 	plt.figure(figsize=(16,24))
-	_ = sns.heatmap(g.iloc[:, :], annot =True)
+	_ = sns.heatmap(g, annot =True)
 	sns.plt.xticks(rotation=60)
 	sns.plt.yticks(rotation=60)
 	sns.plt.show()
 
 def visualizeDistribution(df, colName):
 	#print(df.columns.values)
-	plt.hist(df.loc[:, colName])  # plt.hist passes it's arguments to np.histogram
+	plt.hist(df.loc[:, colName], bins=3)
+	plt.xticks(np.arange(0, 2, 1)) 
 	plt.title("Histogram of " + colName)
 	plt.show()
 
 def scatterFeatures(df, f1_name, f2_name):
 	plt.scatter(df[f1_name], df[f2_name])
-	print(df[f2_name].min(), df[f2_name].max())
-
 	# plt.ylim([df[f2_name].min(), df[f2_name].max()])
 	# plt.xlim([df[f1_name].min(), df[f1_name].max()])
 	plt.xlabel(f1_name)

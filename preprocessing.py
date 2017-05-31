@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.preprocessing import Imputer, LabelEncoder, OneHotEncoder
-from Pablito.visualization import visualizeCorrelations, scatterFeatures
+from Pablito.visualization import visualizeCorrelations, scatterFeatures, visualizeDistribution
 # Importing the dataset
 """
 df = pd.read_csv("Project Train Dataset.csv")
@@ -28,9 +28,9 @@ dataset['EDUCATION'] = dataset['EDUCATION'].fillna('university', axis = 0)
 countMarriage = dataset['MARRIAGE'].value_counts()
 dataset['MARRIAGE'] = dataset['MARRIAGE'].fillna('single', axis = 0)
 dataset.loc[:,'PAY_DEC':'PAY_JUL'] = dataset.loc[:,'PAY_DEC':'PAY_JUL'].replace(to_replace = [-1, -2], value = 0)
+
 #DATA BINNING
 #dataset.describe()
-
 billMean = dataset.loc[:,'BILL_AMT_DEC': 'BILL_AMT_JUL'].mean(axis = 1)
 payMean = dataset.loc[:,'PAY_AMT_DEC': 'PAY_AMT_JUL'].mean(axis = 1)
 #payMax = dataset.loc[:,'PAY_DEC': 'PAY_JUL'].sum(axis = 1)
@@ -87,7 +87,7 @@ X = np.delete(X, [0, 4, 6], 1)
 # Remove Customer ID
 X = np.delete(X, 6, 1)
 
-# Remove BirthDate?
+# Remove BirthDate
 X = np.delete(X, 7, 1)
 
 # Remove PAY_AUG
@@ -100,6 +100,9 @@ X = np.delete(X, 10, 1)
 x = X[:, :-1]
 y = X[:, -1]
 
+index = np.arange(x.shape[0])
+#visualizeCorrelations(pd.DataFrame(X, index=index))
+#visualizeDistribution(pd.DataFrame(X, index=index), 4)
 # import statsmodels.formula.api as sm
 # x = np.append(arr=np.ones((x.shape[0], 1)).astype(int), values=x, axis=1)
 # x = np.delete(x, 2, 1)
@@ -108,7 +111,7 @@ y = X[:, -1]
 
 # print(regressor_OLS.summary())
 
-
+visualizeDistribution(dataset, 'DEFAULT PAYMENT JAN')
 
 #Splitting the dataset into training and test set
 from sklearn.model_selection import train_test_split
@@ -162,7 +165,7 @@ models = {
      'ExtraTreesClassifier' : ExtraTreesClassifier(n_estimators = 50, max_depth = None, random_state = 0, n_jobs = -1),
      'IsolationForest' : IsolationForest()
 }
-
+	
 classifier = models['LogisticRegression']
 #classifier1 = models['MLPClassifier']
 #classifier2 = models['RandomForest']
