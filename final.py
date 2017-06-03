@@ -77,7 +77,7 @@ from imblearn.over_sampling import SMOTE, ADASYN, RandomOverSampler
 from imblearn.under_sampling import ClusterCentroids, EditedNearestNeighbours, TomekLinks
 from imblearn.combine import SMOTETomek
 
-sm = SMOTE(random_state=42, k_neighbors = 10, kind = 'svm', out_step = 0.5, m_neighbors = 20)
+#sm = SMOTE(random_state=42, k_neighbors = 10, kind = 'svm', out_step = 0.5, m_neighbors = 20)
 #adasm = ADASYN(random_state=42, n_neighbors = 5)
 ros = RandomOverSampler(random_state = 42)
 #cc = ClusterCentroids(random_state=42)
