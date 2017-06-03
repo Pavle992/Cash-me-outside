@@ -10,6 +10,10 @@ Created on Tue May 30 21:19:50 2017
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import Imputer, LabelEncoder, OneHotEncoder
+from visualization import visualizeCorrelations
+
+import warnings
+warnings.filterwarnings('ignore', category = DeprecationWarning)
 
 dataset = pd.read_csv('train.csv', sep=';')
 
@@ -22,6 +26,8 @@ dataset['MARRIAGE'] = dataset['MARRIAGE'].fillna('single', axis = 0)
 
 #Replace negative values in PAY
 dataset.loc[:,'PAY_DEC':'PAY_JUL'] = dataset.loc[:,'PAY_DEC':'PAY_JUL'].replace(to_replace = [-1, -2], value = 0)
+
+visualizeCorrelations(dataset)
 
 #Mean on BILL_AMT and PAY_AMT
 billMean = dataset.loc[:,'BILL_AMT_DEC': 'BILL_AMT_JUL'].mean(axis = 1)
@@ -96,6 +102,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier, VotingClassifier, IsolationForest, BaggingClassifier
 from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier
+
 
 models = {
 	'LogisticRegression' : LogisticRegression(random_state = 0, C = 0.05, penalty = 'l2'), #max 54,35 penalty = l2 c = 0.05

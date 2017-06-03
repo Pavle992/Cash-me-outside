@@ -19,6 +19,8 @@ df.to_csv('train.csv', index=False)
 
 dataset = pd.read_csv('train.csv', sep=';')
 
+dataset.info()
+
 #print(dataset.head())
 
 #print(dataset.info())
@@ -160,9 +162,9 @@ models = {
 	'AdaBoost' : AdaBoostClassifier(n_estimators=100, random_state=0, base_estimator=DecisionTreeClassifier(criterion='gini', random_state=0)),
      'MLPClassifier' : MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5,2), random_state=1),
      'XGBClassifier' : XGBClassifier(n_estimators = 100, gamma = 0.00000001, reg_lambda = 100, learning_rate = 0.02, subsample = 0.7),
+     'XGBClassifier1' : XGBClassifier(n_estimators = 100, gamma = 0.00000001, reg_lambda = 0.001, learning_rate = 0.02, subsample = 0.3),
      #54.92 reg_lamba = 10 gamma 10 max_depth = 4, n_estimat = 100 l_rate = 0.02 reg_lamd = 10
      'ExtraTreesClassifier' : ExtraTreesClassifier(n_estimators = 50, max_depth = None, random_state = 0, n_jobs = -1),
-     'IsolationForest' : IsolationForest(),
      'BaggingClassifier' : BaggingClassifier(XGBClassifier(n_estimators = 100, gamma = 0.00000001, reg_lambda = 100, learning_rate = 0.02, subsample = 0.7), n_estimators = 50, max_samples = 0.5, max_features = 0.5,n_jobs = -1, random_state = 0),
      'BaggingClassifierLogistic' : BaggingClassifier(LogisticRegression(random_state = 0, C = 0.05, penalty = 'l2'), n_estimators = 50, max_samples = 0.5, max_features = 0.5,n_jobs = -1, random_state = 0)
 }
@@ -189,7 +191,7 @@ print(f1)
 # Applying k-Fold Cross Validation
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 folds = StratifiedKFold(n_splits = 10, shuffle = True, random_state = 0)
-
+#
 #accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = folds, scoring = 'f1')
 #print(accuracies.mean())
 #print(accuracies.std())
@@ -197,12 +199,12 @@ folds = StratifiedKFold(n_splits = 10, shuffle = True, random_state = 0)
 # Applying Grid Search to find the best model and the best parameters
 #from sklearn.model_selection import GridSearchCV
 #parameters = [
-#	             {'gamma' : np.arange(0.000001, 11, 10),
-#                   'max_depth' : np.arange(1,11, 2),
-#                   'reg_lambda' : np.arange(0.00001, 101, 10),
-#                   'learning_rate' : [0.01, 0.02, 0.1, 0.2, 0.3]
+#	             {'gamma' : [0.00000001],
+#                   'subsample' : [0.3],
+#                   'reg_lambda' : [0.001],
 #                   
 #                   
+#
 #                  } 
 #              ]
 #
@@ -212,6 +214,8 @@ folds = StratifiedKFold(n_splits = 10, shuffle = True, random_state = 0)
 #best_parameters = grid_search.best_params_
 #print(best_accuracy)
 #print(best_parameters)
+#
+#results = grid_search.cv_results_
 
 # # Visualising the Training set results
 # from matplotlib.colors import ListedColormap
