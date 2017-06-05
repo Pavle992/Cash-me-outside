@@ -1,7 +1,6 @@
 # Data Mining and Text Mining Course Project
 
 ### Team: Cash-me-outside
-#### How about that!?
 
 ### Description
 The repo contains [Python notebook][2] created as a result of [Data Mining and Text mining Course Project][1] at Politecnico di Milano in academic year 2016/2017.
